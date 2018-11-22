@@ -151,6 +151,22 @@ var lmsServer = Vue.component('lms-server', {
         }.bind(this), LMS_STATUS_REFRESH_MAX);
     },
     mounted: function() {
+
+        var cometd = new org.cometd.CometD();
+        cometd.init({url: lmsServerAddress + '/cometd', logLevel:'debug'});
+        cometd.addListener('/meta/handshake', function(message) {
+            //console.log("HANDSHAKE:"+JSON.stringify(message, null, 2));
+            if (eval(message).successful) {
+                console.log("Handshake successful");
+                cometd.subscribe('/slim/serverstatus', cometd.getClientId(),
+                                function(res) { console.log("serverstatus:"+JSON.stringify(res, null, 2));},
+                                {data:{response:'/'+cometd.getClientId()+'/slim/serverstatus', request:['', ['serverstatus', 0, 50, 'subscribe:60']]}},
+                                function(res) { console.log("serverstatusX:"+JSON.stringify(res, null, 2));});
+            }
+        });
+        //cometd.disconnect();
+
+
         bus.$on('refreshStatus', function() {
 	        this.refreshStatus();
         }.bind(this));
