@@ -1,3 +1,4 @@
+
 /**
  * LMS-Material
  *
@@ -295,8 +296,8 @@ var lmsBrowse = Vue.component("lms-browse", {
             pinned: [],
             libraryName: undefined,
             selection: [],
-            collapsed: [false, false, false]
-            showLetter: false,                             //toggles display of overlay when scrolling  
+            collapsed: [false, false, false],
+            showLetter: false                             //toggles display of overlay when scrolling  
     }
     },
     computed: {
@@ -1599,45 +1600,47 @@ var lmsBrowse = Vue.component("lms-browse", {
             this.scrollElement = document.getElementById(this.useGrid ? "browse-grid" : "browse-list");
             var isScrolling;
             this.scrollElement.addEventListener('scroll', () => {
-                // display a letter as overlay whilst scrolling - displays first letter of item at top of screen
-
-                window.clearTimeout(isScrolling);                            // Clear a timeout if still scrolling
-                isScrolling =  setTimeout( () => {                           // Show the overlay for 0.5 sec after scrolling...
+ 	    const scrollY = this.scrollElement.scrollTop;
+            const visible = this.scrollElement.clientHeight;
+	    const pageHeight = this.scrollElement.scrollHeight;
+	    const pad = (visible*2.5);
+            const bottomOfPage = (visible + scrollY) >= (pageHeight-(pageHeight>pad ? pad : 300));
+                
+                // if list fully loaded, display a letter as overlay whilst scrolling - displays first letter of item at top of screen
+                if (this.listSize  == this.items.length) {                  // Show  overlay only if list is fully loaded
+			window.clearTimeout(isScrolling);                            // Clear a timeout if still scrolling
+			isScrolling =  setTimeout( () => {                           // Show the overlay for 0.5 sec after scrolling...
                                this.showLetter = false;
                                },500);
 
-                const scrollY = this.scrollElement.scrollTop;
-                const visible = this.scrollElement.clientHeight;
-                const pageHeight = this.scrollElement.scrollHeight;
-                const pad = (visible*2.5);
 
-                const bottomOfPage = (visible + scrollY) >= (pageHeight-(pageHeight>pad ? pad : 300));
-
-                const numPages =  Math.floor(scrollY/visible)+1;            // Calculate number of pages scrolled
-                var stopWordsRE = /(?:^|\s+)(?:the|The|El)(?=\s+|$)/gi;     // Pathetic attempt at stop word removal (needs to be a parameter)
+	
+        	        const numPages =  Math.floor(scrollY/visible)+1;            // Calculate number of pages scrolled
+                	var stopWordsRE = /(?:^|\s+)(?:the|The|El)(?=\s+|$)/gi;     // Pathetic attempt at stop word removal (needs to be a parameter)
 	 
- 
-                if (this.useGrid) {                                         // Grid Display, 
-                    var elem = document.getElementById("item0");
-                    var rows = Math.round( scrollY / elem.offsetHeight); 
-                    var colsPerPage  =   Math.floor(this.scrollElement.clientWidth / elem.offsetWidth) ; 
-                    var itemNum = "item"+ Math.floor(rows*colsPerPage);
-                    var classname = "v-card v-card--flat v-card--tile theme--" + ( this.$store.state.darkUi ? "dark" : "light"); 
-                    elem = document.getElementById(itemNum).getElementsByClassName(classname)[0];
-                    var  overlayHTML = elem.title.replace(stopWordsRE,"").trim().charAt(0).toUpperCase();
-		}else {                                                     // List display 
-                    var classname = "v-list__tile v-list__tile--link v-list__tile--avatar theme--" + (this.$store.state.darkUi ? "dark" : "light");
-                    var elem = document.getElementsByClassName(classname);
-                    var  rows  =   Math.round( scrollY / elem[0].offsetHeight); 
-                    var  overlayText = elem[rows].getElementsByClassName("v-list__tile__content")[0].getElementsByClassName("v-list__tile__title")[0].innerHTML;
-                    var  overlayHTML = overlayText.replace(stopWordsRE,"").trim().charAt(0).toUpperCase();
-                }
-                // Displau the overlay, larger than normal (could be a parameter)
-                this.showLetter = true; 
-                document.getElementById("letterOverlay").style.transform = "scale(10,10)"
-                document.getElementById("letterOverlay").innerHTML = overlayHTML
+			if (this.useGrid) {                                         // Grid Display, 
+				var elem = document.getElementById("item0");
+				var rows = Math.round( scrollY / elem.offsetHeight); 
+				var colsPerPage  =   Math.floor(this.scrollElement.clientWidth / elem.offsetWidth) ; 
+				var itemNum = "item"+ Math.floor(rows*colsPerPage);
+	                        var classname = "v-card v-card--flat v-card--tile theme--" + ( this.$store.state.darkUi ? "dark" : "light"); 
+	                        elem = document.getElementById(itemNum).getElementsByClassName(classname)[0];
+	                        var  overlayHTML = elem.title.replace(stopWordsRE,"").trim().charAt(0).toUpperCase();
+			}else {                                                     // List display 
+				var classname = "v-list__tile v-list__tile--link v-list__tile--avatar theme--" + (this.$store.state.darkUi ? "dark" : "light");
+				var elem = document.getElementsByClassName(classname);
+				var  rows  =   Math.round( scrollY / elem[0].offsetHeight); 
+				var  overlayText = elem[rows].getElementsByClassName("v-list__tile__content")[0].getElementsByClassName("v-list__tile__title")[0].innerHTML;
+				var  overlayHTML = overlayText.replace(stopWordsRE,"").trim().charAt(0).toUpperCase();
+	                }
+        	        // Displau the overlay, larger than normal (could be a parameter)
+	                this.showLetter = true; 
+        	        document.getElementById("letterOverlay").style.transform = "scale(10,10)"
+                	document.getElementById("letterOverlay").innerHTML = overlayHTML
 
- 
+                }
+
+
                 if (this.fetchingItems || this.listSize<=this.items.length) {
                     return;
                 }
