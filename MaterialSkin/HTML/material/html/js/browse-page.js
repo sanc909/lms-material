@@ -1,4 +1,3 @@
-
 /**
  * LMS-Material
  *
@@ -1605,9 +1604,12 @@ var lmsBrowse = Vue.component("lms-browse", {
 	    const pageHeight = this.scrollElement.scrollHeight;
 	    const pad = (visible*2.5);
             const bottomOfPage = (visible + scrollY) >= (pageHeight-(pageHeight>pad ? pad : 300));
-                
-                // if list fully loaded, display a letter as overlay whilst scrolling - displays first letter of item at top of screen
-                if (this.listSize  == this.items.length) {                  // Show  overlay only if list is fully loaded
+            const foundit = document.getElementsByClassName( "flex ellipsis subtoolbar-title xs12")[0].
+                            innerHTML;                
+            const sorted = (foundit.search(/Albums|Album Artists|All Artists|Genres|Playlists/) == 0) ;
+
+                // if list fully loaded sorted list -  display a letter as overlay whilst scrolling - displays first letter of item at top of screen
+                if  (this.listSize  == this.items.length && this.listSize > 100) {                  // Show  overlay only if list is fully loaded
 			window.clearTimeout(isScrolling);                            // Clear a timeout if still scrolling
 			isScrolling =  setTimeout( () => {                           // Show the overlay for 0.5 sec after scrolling...
                                this.showLetter = false;
